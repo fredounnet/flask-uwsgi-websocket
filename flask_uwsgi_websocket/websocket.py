@@ -3,6 +3,7 @@ import sys
 import uuid
 from ._uwsgi import uwsgi
 from gevent.monkey import patch_all
+import werkzeug.routing
 
 
 class WebSocketClient(object):
@@ -69,7 +70,7 @@ class WebSocket(object):
         if app:
             self.init_app(app)
         self.timeout = timeout
-        self.routes = {}
+        self.routes = werkzeug.routing.Map([])
 
     def run(self, app=None, debug=False, host='localhost', port=5000, **kwargs):
         if not app:
@@ -112,6 +113,6 @@ class WebSocket(object):
 
     def route(self, rule):
         def decorator(f):
-            self.routes[rule] = f
+            self.routes.add(werkzeug.routing.Rule(rule,endpoint=f))
             return f
         return decorator

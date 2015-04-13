@@ -39,7 +39,12 @@ class GeventWebSocketMiddleware(WebSocketMiddleware):
     client = GeventWebSocketClient
 
     def __call__(self, environ, start_response):
-        handler = self.websocket.routes.get(environ['PATH_INFO'])
+        m = self.websocket.routes.bind('')
+        try:
+            handler,p = m.match(environ['PATH_INFO'])
+            assert handler.func_code.co_argcount >= (len(p) + 1)
+        except:
+            handler=None
 
         if not handler or 'HTTP_SEC_WEBSOCKET_KEY' not in environ:
             return self.wsgi_app(environ, start_response)
